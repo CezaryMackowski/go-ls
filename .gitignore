@@ -1,0 +1,9 @@
+# Binary directory
+bin/*
+!bin/.gitkeep
+
+# GoTask
+.task
+
+# Configs
+config.toml

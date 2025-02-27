@@ -1,0 +1,75 @@
+version: '3'
+
+env:
+  OS: '{{ .GOOS | default "darwin" }}'
+  ARCH: '{{ .GOARCH | default "arm64" }}'
+  BIN_NAME: "go-ls"
+  BIN_DIR: '{{ .ROOT_DIR }}/bin/'
+  BIN_DIR_SYSTEM_SPECIFIC: '{{ .ROOT_DIR }}/bin/{{ .OS }}-{{ .ARCH }}'
+
+interval: 500ms
+
+tasks:
+  default:
+    desc: Show help for each task
+    cmd: task -l
+    silent: true
+
+  test:
+    desc: Run tests
+    cmd: go test ./...
+
+  run:generate:
+    desc: Run generate-config command
+    watch: true
+    sources:
+      - '**/*.go'
+    cmd: go run . generate -p config.toml
+
+  run:go-ls:
+    desc: Run go-ls command
+    watch: true
+    sources:
+      - '**/*.go'
+    cmd: go run . . -c config.toml
+
+  build:
+    desc: Build for current OS and ARCH
+    cmd: GOOS={{ .OS }} GOARCH={{ .ARCH }} go build -o {{ .BIN_DIR_SYSTEM_SPECIFIC }}/{{ .BIN_NAME }} ../..
+    dir: '{{ .BIN_DIR_SYSTEM_SPECIFIC }}'
+
+  build:clear:
+    desc: Clear bin directory
+    cmd: rm -R -- */
+    dir: '{{ .BIN_DIR }}'
+
+  build:mac:
+    desc: Build for MacOS
+    cmds:
+      - for: ["amd64", "arm64"]
+        cmd: GOOS=darwin GOARCH={{ .ITEM }} go build -o ./darwin-{{ .ITEM }}/{{ .BIN_NAME }} ..
+    dir: '{{ .BIN_DIR }}'
+
+  build:linux:
+    desc: Build for Linux
+    cmds:
+      - for: ["amd64", "arm64"]
+        cmd: GOOS=linux GOARCH={{ .ITEM }} go build -o ./linux-{{ .ITEM }}/{{ .BIN_NAME }} ..
+    dir: '{{ .BIN_DIR }}'
+
+  build:windows:
+    desc: Build for Windows
+    cmds:
+      - for: ["amd64", "arm64"]
+        cmd: GOOS=windows GOARCH={{ .ITEM }} go build -o ./windows-{{ .ITEM }}/{{ .BIN_NAME }} ..
+    dir: '{{ .BIN_DIR }}'
+
+  build:all:
+    desc: Build for OS's and ARCH's
+    cmds:
+      - for:
+          matrix:
+            OS: ["darwin", "linux", "windows"]
+            ARCH: ["amd64", "arm64"]
+        cmd: GOOS={{ .ITEM.OS }} GOARCH={{ .ITEM.ARCH }} go build -o ./{{ .ITEM.OS }}-{{ .ITEM.ARCH }}/{{ .BIN_NAME }} ..
+    dir: '{{ .BIN_DIR }}'
