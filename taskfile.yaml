@@ -57,19 +57,12 @@ tasks:
         cmd: GOOS=linux GOARCH={{ .ITEM }} go build -o ./linux-{{ .ITEM }}/{{ .BIN_NAME }} ..
     dir: '{{ .BIN_DIR }}'
 
-  build:windows:
-    desc: Build for Windows
-    cmds:
-      - for: ["amd64", "arm64"]
-        cmd: GOOS=windows GOARCH={{ .ITEM }} go build -o ./windows-{{ .ITEM }}/{{ .BIN_NAME }} ..
-    dir: '{{ .BIN_DIR }}'
-
   build:all:
     desc: Build for OS's and ARCH's
     cmds:
       - for:
           matrix:
-            OS: ["darwin", "linux", "windows"]
+            OS: ["darwin", "linux"]
             ARCH: ["amd64", "arm64"]
         cmd: GOOS={{ .ITEM.OS }} GOARCH={{ .ITEM.ARCH }} go build -o ./{{ .ITEM.OS }}-{{ .ITEM.ARCH }}/{{ .BIN_NAME }} ..
     dir: '{{ .BIN_DIR }}'
