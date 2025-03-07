@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"math/bits"
 	"os"
 	"os/user"
 	"slices"
@@ -17,7 +16,7 @@ type FileType uint8
 
 const (
 	NonRegular FileType = iota
-	RegularFile
+	Regular
 	Directory
 	Pipe
 	SymbolicLink
@@ -99,7 +98,7 @@ type ColumnsWidth struct {
 	LenUserName    int
 	LenGroupName   int
 	LenSize        int
-	LenDate        int
+	LenModifiedAt  int
 	LenFileName    int
 }
 
@@ -110,7 +109,7 @@ func newColumnsWidth() *ColumnsWidth {
 		LenUserName:    0,
 		LenGroupName:   0,
 		LenSize:        0,
-		LenDate:        0,
+		LenModifiedAt:  0,
 		LenFileName:    0,
 	}
 }
@@ -129,10 +128,10 @@ func (cw *ColumnsWidth) update(fileInfo fs.FileInfo, stat *syscall.Stat_t, userI
 		cw.LenGroupName = len(groupInfo.Name)
 	}
 	if config.General.SizeUnit != None && len(SizeFormat(fileInfo.Size(), config.General.SizeUnit)) > cw.LenSize {
-		cw.LenSize = len(SizeFormat(fileInfo.Size(), Auto))
+		cw.LenSize = len(SizeFormat(fileInfo.Size(), config.General.SizeUnit))
 	}
-	if config.Filter.ModificationTime && len(fileInfo.ModTime().Format(config.General.DateFormat)) > cw.LenDate {
-		cw.LenDate = len(fileInfo.ModTime().Format(config.General.DateFormat))
+	if config.Filter.ModificationTime && len(fileInfo.ModTime().Format(config.General.DateFormat)) > cw.LenModifiedAt {
+		cw.LenModifiedAt = len(fileInfo.ModTime().Format(config.General.DateFormat))
 	}
 	if config.Filter.FileName && len(fileInfo.Name()) > cw.LenFileName {
 		cw.LenFileName = len(fileInfo.Name())
@@ -142,7 +141,7 @@ func (cw *ColumnsWidth) update(fileInfo fs.FileInfo, stat *syscall.Stat_t, userI
 func GetFiles(path string, config *Config) ([]*DisplayItem, *ColumnsWidth) {
 	files, _ := os.ReadDir(path)
 
-	listOfFiles := make([]*DisplayItem, 0, len(files))
+	listOfFiles := make(DisplayItems, 0, len(files))
 	columnsWidth := newColumnsWidth()
 
 	for _, f := range files {
@@ -167,10 +166,10 @@ func GetFiles(path string, config *Config) ([]*DisplayItem, *ColumnsWidth) {
 	}
 
 	if config.Filter.OnlyDirs {
-		listOfFiles = DisplayItems(listOfFiles).filterDirectories()
+		listOfFiles = listOfFiles.filterDirectories()
 	}
 	if config.Filter.OnlyFiles {
-		listOfFiles = DisplayItems(listOfFiles).filterFiles()
+		listOfFiles = listOfFiles.filterFiles()
 	}
 	if config.General.DirsFirst {
 		sort.Sort(ByDirs(listOfFiles))
@@ -184,7 +183,7 @@ func GetFiles(path string, config *Config) ([]*DisplayItem, *ColumnsWidth) {
 
 func typeOfFile(fileInfo fs.FileInfo) FileType {
 	if fileInfo.Mode().IsRegular() {
-		return RegularFile
+		return Regular
 	}
 	if fileInfo.Mode().Type() == fs.ModeDir {
 		return Directory
@@ -209,34 +208,45 @@ func typeOfFile(fileInfo fs.FileInfo) FileType {
 }
 
 func SizeFormat(bytes int64, sizeType SizeType) string {
-	if sizeType == Bytes {
+	switch sizeType {
+	case None, Bytes:
 		return fmt.Sprintf("%d B", bytes)
+	case KibiByte:
+		return fmt.Sprintf("%.1f KiB", float64(bytes)/1024)
+	case MebiBytes:
+		return fmt.Sprintf("%.1f MiB", float64(bytes)/(1024*1024))
+	case GibiBytes:
+		return fmt.Sprintf("%.1f GiB", float64(bytes)/(1024*1024*1024))
+	case Auto:
+		fallthrough
+	default:
+		if bytes < 1024 {
+			return fmt.Sprintf("%d B", bytes)
+		}
+		units := []string{"KiB", "MiB", "GiB", "TiB", "PiB", "EiB"}
+		value := float64(bytes)
+		unitIndex := -1
+		for value >= 1024 && unitIndex < len(units)-1 {
+			value /= 1024
+			unitIndex++
+		}
+		return fmt.Sprintf("%.1f %s", value, units[unitIndex])
 	}
-
-	if bytes < 1024 {
-		return fmt.Sprintf("%d B", bytes)
-	}
-
-	base := uint(bits.Len64(uint64(bytes)) / 10)
-	val := float64(bytes) / float64(uint64(1<<(base*10)))
-
-	return fmt.Sprintf("%.1f %ciB", val, " KMGTPE"[base])
 }
 
-func PathExists(path string) error {
+func PathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
-
 	if err == nil {
-		return nil
+		return true, nil
 	}
 
 	if errors.Is(err, os.ErrNotExist) {
-		return errors.New("path does not exist")
+		return false, errors.New("path does not exist")
 	}
 
 	if errors.Is(err, os.ErrPermission) {
-		return errors.New("permission denied")
+		return false, errors.New("permission denied")
 	}
 
-	return errors.New("unknown error: " + err.Error())
+	return false, errors.New("unknown error: " + err.Error())
 }

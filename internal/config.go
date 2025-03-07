@@ -21,9 +21,12 @@ func (s *SizeType) Type() string {
 }
 
 const (
-	None  SizeType = "none"
-	Bytes          = "bytes"
-	Auto           = "auto"
+	None      SizeType = "none"
+	Bytes              = "B"
+	KibiByte           = "KiB"
+	MebiBytes          = "MiB"
+	GibiBytes          = "GiB"
+	Auto               = "auto"
 )
 
 type Color struct {
@@ -49,14 +52,14 @@ type Permissions struct {
 }
 
 type FileName struct {
-	NonRegularFileColor Color `toml:"non_regular_file_color"`
-	RegularFileColor    Color `toml:"file_color"`
-	DirectoryColor      Color `toml:"directory_color"`
-	PipeColor           Color `toml:"pipe_color"`
-	SymbolicLinkColor   Color `toml:"symbolic_link_color"`
-	BlockDeviceColor    Color `toml:"block_device_color"`
-	CharDeviceColor     Color `toml:"char_device_color"`
-	SocketColor         Color `toml:"socket_color"`
+	NonRegularColor   Color `toml:"non_regular_file_color"`
+	RegularColor      Color `toml:"file_color"`
+	DirectoryColor    Color `toml:"directory_color"`
+	PipeColor         Color `toml:"pipe_color"`
+	SymbolicLinkColor Color `toml:"symbolic_link_color"`
+	BlockDeviceColor  Color `toml:"block_device_color"`
+	CharDeviceColor   Color `toml:"char_device_color"`
+	SocketColor       Color `toml:"socket_color"`
 }
 
 type UserName struct {
@@ -140,21 +143,21 @@ func NewConfig() *Config {
 				OthersExecuteColor: Color{ForegroundColor: "#E8055B", BackgroundColor: ""},
 			},
 			FileName: &FileName{
-				NonRegularFileColor: Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
-				RegularFileColor:    Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
-				DirectoryColor:      Color{ForegroundColor: "#05AEFF", BackgroundColor: ""},
-				PipeColor:           Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
-				SymbolicLinkColor:   Color{ForegroundColor: "#D71CFF", BackgroundColor: ""},
-				BlockDeviceColor:    Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
-				CharDeviceColor:     Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
-				SocketColor:         Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
+				NonRegularColor:   Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
+				RegularColor:      Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
+				DirectoryColor:    Color{ForegroundColor: "#05AEFF", BackgroundColor: ""},
+				PipeColor:         Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
+				SymbolicLinkColor: Color{ForegroundColor: "#D71CFF", BackgroundColor: ""},
+				BlockDeviceColor:  Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
+				CharDeviceColor:   Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
+				SocketColor:       Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
 			},
 		},
 	}
 }
 
 func ParseConfigFile(path string) (*Config, error) {
-	err := PathExists(path)
+	_, err := PathExists(path)
 	if err != nil {
 		return nil, err
 	}

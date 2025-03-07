@@ -40,8 +40,6 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
 	RootCmd.AddCommand(versionCmd)
 	RootCmd.AddCommand(generateConfigCmd)
 
@@ -62,20 +60,7 @@ func init() {
 	RootCmd.Flags().BoolVarP(&onlyFiles, "only-files", "", false, "")
 	RootCmd.MarkFlagsMutuallyExclusive("dirs-first", "files-first")
 	RootCmd.MarkFlagsMutuallyExclusive("only-dirs", "only-files")
-	RootCmd.SetFlagErrorFunc(errorFunc)
 	RootCmd.SetErrPrefix("go-ls:")
-}
-
-func errorFunc(cmd *cobra.Command, err error) error {
-	g := 2 + 2
-
-	fmt.Println(g)
-
-	return nil
-}
-
-func initConfig() {
-
 }
 
 func argsParse(cmd *cobra.Command, args []string) error {
@@ -83,14 +68,14 @@ func argsParse(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := internal.PathExists(args[0]); err != nil {
+	if _, err := internal.PathExists(args[0]); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func preRun(cmd *cobra.Command, args []string) error {
+func preRun(cmd *cobra.Command, _ []string) error {
 	var err error
 	if cmd.Flags().Changed("config-file") {
 		config, err = internal.ParseConfigFile(configFile)
@@ -178,22 +163,60 @@ func printLongOutput(file *internal.DisplayItem, config *internal.Config, column
 		permissions = formatPermissions(file, config, columnsWidth.LenPermissions)
 	}
 	if columnsWidth.LenNLinks != 0 {
-		nLinks = formatNLinks(file, config, columnsWidth.LenNLinks)
+		nLinks = formatCommonColumn(
+			strconv.Itoa(file.NLinks),
+			columnsWidth.LenNLinks+2,
+			lipgloss.Color(config.Theme.NLinks.ForegroundColor),
+			lipgloss.Color(config.Theme.NLinks.BackgroundColor),
+			lipgloss.Right,
+		)
 	}
 	if columnsWidth.LenUserName != 0 {
-		user = formatUser(file, config, columnsWidth.LenUserName)
+		user = formatCommonColumn(
+			file.UserName,
+			columnsWidth.LenUserName+2,
+			lipgloss.Color(config.Theme.NLinks.ForegroundColor),
+			lipgloss.Color(config.Theme.NLinks.BackgroundColor),
+			lipgloss.Right,
+		)
 	}
 	if columnsWidth.LenGroupName != 0 {
-		group = formatGroup(file, config, columnsWidth.LenGroupName)
+		group = formatCommonColumn(
+			file.GroupName,
+			columnsWidth.LenGroupName+2,
+			lipgloss.Color(config.Theme.GroupName.ForegroundColor),
+			lipgloss.Color(config.Theme.GroupName.BackgroundColor),
+			lipgloss.Right,
+		)
 	}
 	if columnsWidth.LenSize != 0 {
-		size = formatSize(file, config, columnsWidth.LenSize)
+		size = formatCommonColumn(
+			internal.SizeFormat(file.Size, config.General.SizeUnit),
+			columnsWidth.LenSize+2,
+			lipgloss.Color(config.Theme.Size.ForegroundColor),
+			lipgloss.Color(config.Theme.Size.BackgroundColor),
+			lipgloss.Right,
+		)
 	}
-	if columnsWidth.LenDate != 0 {
-		modifiedAt = formatModifiedAt(file, config, columnsWidth.LenDate)
+	if columnsWidth.LenModifiedAt != 0 {
+		modifiedAt = formatCommonColumn(
+			file.ModifiedAt,
+			columnsWidth.LenModifiedAt+2,
+			lipgloss.Color(config.Theme.ModificationTime.ForegroundColor),
+			lipgloss.Color(config.Theme.ModificationTime.BackgroundColor),
+			lipgloss.Left,
+		)
 	}
 	if columnsWidth.LenFileName != 0 {
-		fileName = formatFileName(file, config, columnsWidth.LenFileName)
+		fgColor, bgColor := getFileTypeColor(file.Type, config)
+
+		fileName = formatCommonColumn(
+			file.Name,
+			columnsWidth.LenFileName+2,
+			fgColor,
+			bgColor,
+			lipgloss.Left,
+		)
 	}
 
 	return lipgloss.JoinHorizontal(lipgloss.Top, permissions, nLinks, user, group, size, modifiedAt, fileName)
@@ -249,13 +272,23 @@ func formatPermissions(file *internal.DisplayItem, config *internal.Config, colu
 		)
 }
 
-func formatFileName(file *internal.DisplayItem, config *internal.Config, columnWidth int) string {
+func formatCommonColumn(text string, width int, fgColor lipgloss.Color, bgColor lipgloss.Color, align lipgloss.Position) string {
+	return lipgloss.NewStyle().
+		Width(width).
+		Align(align).
+		MarginLeft(3).
+		Foreground(fgColor).
+		Background(bgColor).
+		Render(text)
+}
+
+func getFileTypeColor(fileType internal.FileType, config *internal.Config) (lipgloss.Color, lipgloss.Color) {
 	var fgColor, bgColor lipgloss.Color
 
-	switch file.Type {
-	case internal.RegularFile:
-		fgColor = lipgloss.Color(config.Theme.FileName.RegularFileColor.ForegroundColor)
-		bgColor = lipgloss.Color(config.Theme.FileName.RegularFileColor.BackgroundColor)
+	switch fileType {
+	case internal.Regular:
+		fgColor = lipgloss.Color(config.Theme.FileName.RegularColor.ForegroundColor)
+		bgColor = lipgloss.Color(config.Theme.FileName.RegularColor.BackgroundColor)
 	case internal.Directory:
 		fgColor = lipgloss.Color(config.Theme.FileName.DirectoryColor.ForegroundColor)
 		bgColor = lipgloss.Color(config.Theme.FileName.DirectoryColor.BackgroundColor)
@@ -275,67 +308,11 @@ func formatFileName(file *internal.DisplayItem, config *internal.Config, columnW
 		fgColor = lipgloss.Color(config.Theme.FileName.SocketColor.ForegroundColor)
 		bgColor = lipgloss.Color(config.Theme.FileName.SocketColor.BackgroundColor)
 	default:
-		fgColor = lipgloss.Color(config.Theme.FileName.NonRegularFileColor.ForegroundColor)
-		bgColor = lipgloss.Color(config.Theme.FileName.NonRegularFileColor.BackgroundColor)
+		fgColor = lipgloss.Color(config.Theme.FileName.NonRegularColor.ForegroundColor)
+		bgColor = lipgloss.Color(config.Theme.FileName.NonRegularColor.BackgroundColor)
 	}
 
-	return lipgloss.NewStyle().
-		Width(columnWidth + 2).
-		Align(lipgloss.Left).
-		MarginLeft(3).
-		Foreground(fgColor).
-		Background(bgColor).
-		Render(file.Name)
-}
-
-func formatNLinks(file *internal.DisplayItem, config *internal.Config, columnWidth int) string {
-	return lipgloss.NewStyle().
-		Width(columnWidth + 2).
-		Align(lipgloss.Right).
-		MarginLeft(3).
-		Foreground(lipgloss.Color(config.Theme.NLinks.ForegroundColor)).
-		Background(lipgloss.Color(config.Theme.NLinks.BackgroundColor)).
-		Render(strconv.Itoa(file.NLinks))
-}
-
-func formatUser(file *internal.DisplayItem, config *internal.Config, columnWidth int) string {
-	return lipgloss.NewStyle().
-		Width(columnWidth + 2).
-		Align(lipgloss.Right).
-		MarginLeft(3).
-		Foreground(lipgloss.Color(config.Theme.UserName.ForegroundColor)).
-		Background(lipgloss.Color(config.Theme.UserName.BackgroundColor)).
-		Render(file.UserName)
-}
-
-func formatGroup(file *internal.DisplayItem, config *internal.Config, columnWidth int) string {
-	return lipgloss.NewStyle().
-		Width(columnWidth + 2).
-		Align(lipgloss.Right).
-		MarginLeft(3).
-		Foreground(lipgloss.Color(config.Theme.GroupName.ForegroundColor)).
-		Background(lipgloss.Color(config.Theme.GroupName.BackgroundColor)).
-		Render(file.GroupName)
-}
-
-func formatSize(file *internal.DisplayItem, config *internal.Config, columnWidth int) string {
-	return lipgloss.NewStyle().
-		Width(columnWidth + 2).
-		Align(lipgloss.Right).
-		MarginLeft(3).
-		Foreground(lipgloss.Color(config.Theme.UserName.ForegroundColor)).
-		Background(lipgloss.Color(config.Theme.UserName.BackgroundColor)).
-		Render(internal.SizeFormat(file.Size, config.General.SizeUnit))
-}
-
-func formatModifiedAt(file *internal.DisplayItem, config *internal.Config, columnWidth int) string {
-	return lipgloss.NewStyle().
-		Width(columnWidth + 2).
-		Align(lipgloss.Left).
-		MarginLeft(3).
-		Foreground(lipgloss.Color(config.Theme.ModificationTime.ForegroundColor)).
-		Background(lipgloss.Color(config.Theme.ModificationTime.BackgroundColor)).
-		Render(file.ModifiedAt)
+	return fgColor, bgColor
 }
 
 func Execute() {
