@@ -6,7 +6,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 	"os"
-	"strconv"
 )
 
 var (
@@ -129,10 +128,13 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	return nil
 }
 
-func run(cmd *cobra.Command, args []string) error {
+func run(_ *cobra.Command, args []string) error {
 	var lines []string
 	var output string
-	files, columnsWidth := internal.GetFiles(args[0], config)
+	files, columnsWidth, err := internal.GetFiles(args[0], config)
+	if err != nil {
+		return err
+	}
 
 	for _, f := range files {
 		if config.General.Long {
@@ -164,7 +166,7 @@ func printLongOutput(file *internal.DisplayItem, config *internal.Config, column
 	}
 	if columnsWidth.LenNLinks != 0 {
 		nLinks = formatCommonColumn(
-			strconv.Itoa(file.NLinks),
+			file.NLinks,
 			columnsWidth.LenNLinks+2,
 			lipgloss.Color(config.Theme.NLinks.ForegroundColor),
 			lipgloss.Color(config.Theme.NLinks.BackgroundColor),

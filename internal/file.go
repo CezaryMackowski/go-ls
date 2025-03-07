@@ -31,8 +31,8 @@ type DisplayItem struct {
 	UserName    string
 	GroupName   string
 	ModifiedAt  string
+	NLinks      string
 	Size        int64
-	NLinks      int
 	Type        FileType
 }
 
@@ -138,17 +138,35 @@ func (cw *ColumnsWidth) update(fileInfo fs.FileInfo, stat *syscall.Stat_t, userI
 	}
 }
 
-func GetFiles(path string, config *Config) ([]*DisplayItem, *ColumnsWidth) {
-	files, _ := os.ReadDir(path)
+func GetFiles(path string, config *Config) ([]*DisplayItem, *ColumnsWidth, error) {
+	files, err := os.ReadDir(path)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to read directory: %w", err)
+	}
 
 	listOfFiles := make(DisplayItems, 0, len(files))
 	columnsWidth := newColumnsWidth()
 
 	for _, f := range files {
-		fileInfo, _ := f.Info()
-		stat, _ := fileInfo.Sys().(*syscall.Stat_t)
-		userInfo, _ := user.LookupId(strconv.Itoa(int(stat.Uid)))
-		groupInfo, _ := user.LookupGroupId(strconv.Itoa(int(stat.Gid)))
+		fileInfo, err := f.Info()
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to get file info: %w", err)
+		}
+
+		stat, ok := fileInfo.Sys().(*syscall.Stat_t)
+		if !ok {
+			return nil, nil, fmt.Errorf("failed to retrieve file system stats for %s", fileInfo.Name())
+		}
+
+		userInfo, err := user.LookupId(strconv.Itoa(int(stat.Uid)))
+		if err != nil {
+			userInfo = &user.User{Username: "Unknown"}
+		}
+
+		groupInfo, err := user.LookupGroupId(strconv.Itoa(int(stat.Gid)))
+		if err != nil {
+			groupInfo = &user.Group{Name: "Unknown"}
+		}
 
 		columnsWidth.update(fileInfo, stat, userInfo, groupInfo, config)
 		fileType := typeOfFile(fileInfo)
@@ -159,7 +177,7 @@ func GetFiles(path string, config *Config) ([]*DisplayItem, *ColumnsWidth) {
 			UserName:    userInfo.Username,
 			GroupName:   groupInfo.Name,
 			Size:        fileInfo.Size(),
-			NLinks:      int(stat.Nlink),
+			NLinks:      strconv.Itoa(int(stat.Nlink)),
 			Type:        fileType,
 			ModifiedAt:  fileInfo.ModTime().Format(config.General.DateFormat),
 		})
@@ -178,7 +196,7 @@ func GetFiles(path string, config *Config) ([]*DisplayItem, *ColumnsWidth) {
 		sort.Sort(ByFiles(listOfFiles))
 	}
 
-	return listOfFiles, columnsWidth
+	return listOfFiles, columnsWidth, nil
 }
 
 func typeOfFile(fileInfo fs.FileInfo) FileType {
