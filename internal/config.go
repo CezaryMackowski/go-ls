@@ -30,13 +30,12 @@ const (
 )
 
 type Color struct {
-	ForegroundColor string `toml:"foreground_color"`
-	BackgroundColor string `toml:"background_color"`
+	Foreground string `toml:"foreground"`
+	Background string `toml:"background"`
 }
 
 type Permissions struct {
-	EmptyColor     Color `toml:"empty_color"`
-	DirectoryColor Color `toml:"directory_color"`
+	EmptyColor Color `toml:"empty_color"`
 
 	OwnerReadColor    Color `toml:"owner_read_color"`
 	OwnerWriteColor   Color `toml:"owner_write_color"`
@@ -124,33 +123,32 @@ func NewConfig() *Config {
 			OnlyFiles:        false,
 		},
 		Theme: &Theme{
-			NLinks:           Color{ForegroundColor: "#D9D9D9", BackgroundColor: ""},
-			UserName:         Color{ForegroundColor: "#EAEAC6", BackgroundColor: ""},
-			GroupName:        Color{ForegroundColor: "#D4D584", BackgroundColor: ""},
-			Size:             Color{ForegroundColor: "#FAF9D3", BackgroundColor: ""},
-			ModificationTime: Color{ForegroundColor: "#00FF02", BackgroundColor: ""},
+			NLinks:           Color{Foreground: "#D9D9D9", Background: ""},
+			UserName:         Color{Foreground: "#EAEAC6", Background: ""},
+			GroupName:        Color{Foreground: "#D4D584", Background: ""},
+			Size:             Color{Foreground: "#FAF9D3", Background: ""},
+			ModificationTime: Color{Foreground: "#00FF02", Background: ""},
 			Permissions: &Permissions{
-				EmptyColor:         Color{ForegroundColor: "#1825FF", BackgroundColor: "#1825FF"},
-				DirectoryColor:     Color{ForegroundColor: "#05AEFF", BackgroundColor: ""},
-				OwnerReadColor:     Color{ForegroundColor: "#55BE57", BackgroundColor: ""},
-				OwnerWriteColor:    Color{ForegroundColor: "#C1C27B", BackgroundColor: ""},
-				OwnerExecuteColor:  Color{ForegroundColor: "#E8055B", BackgroundColor: ""},
-				GroupReadColor:     Color{ForegroundColor: "#55BE57", BackgroundColor: ""},
-				GroupWriteColor:    Color{ForegroundColor: "#C1C27B", BackgroundColor: ""},
-				GroupExecuteColor:  Color{ForegroundColor: "#E8055B", BackgroundColor: ""},
-				OthersReadColor:    Color{ForegroundColor: "#55BE57", BackgroundColor: ""},
-				OthersWriteColor:   Color{ForegroundColor: "#C1C27B", BackgroundColor: ""},
-				OthersExecuteColor: Color{ForegroundColor: "#E8055B", BackgroundColor: ""},
+				EmptyColor:         Color{Foreground: "#C67D7D", Background: "#1825FF"},
+				OwnerReadColor:     Color{Foreground: "#55BE57", Background: ""},
+				OwnerWriteColor:    Color{Foreground: "#C1C27B", Background: ""},
+				OwnerExecuteColor:  Color{Foreground: "#F4005F", Background: ""},
+				GroupReadColor:     Color{Foreground: "#55BE57", Background: ""},
+				GroupWriteColor:    Color{Foreground: "#C1C27B", Background: ""},
+				GroupExecuteColor:  Color{Foreground: "#F4005F", Background: ""},
+				OthersReadColor:    Color{Foreground: "#55BE57", Background: ""},
+				OthersWriteColor:   Color{Foreground: "#C1C27B", Background: ""},
+				OthersExecuteColor: Color{Foreground: "#F4005F", Background: ""},
 			},
 			FileName: &FileName{
-				NonRegularColor:   Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
-				RegularColor:      Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
-				DirectoryColor:    Color{ForegroundColor: "#05AEFF", BackgroundColor: ""},
-				PipeColor:         Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
-				SymbolicLinkColor: Color{ForegroundColor: "#D71CFF", BackgroundColor: ""},
-				BlockDeviceColor:  Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
-				CharDeviceColor:   Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
-				SocketColor:       Color{ForegroundColor: "#FC971E", BackgroundColor: ""},
+				NonRegularColor:   Color{Foreground: "#FC971E", Background: ""},
+				RegularColor:      Color{Foreground: "#FC971E", Background: ""},
+				DirectoryColor:    Color{Foreground: "#05AEFF", Background: ""},
+				PipeColor:         Color{Foreground: "#FC971E", Background: ""},
+				SymbolicLinkColor: Color{Foreground: "#D71CFF", Background: ""},
+				BlockDeviceColor:  Color{Foreground: "#FC971E", Background: ""},
+				CharDeviceColor:   Color{Foreground: "#FC971E", Background: ""},
+				SocketColor:       Color{Foreground: "#FC971E", Background: ""},
 			},
 		},
 	}

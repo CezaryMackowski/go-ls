@@ -168,8 +168,8 @@ func printLongOutput(file *internal.DisplayItem, config *internal.Config, column
 		nLinks = formatCommonColumn(
 			file.NLinks,
 			columnsWidth.LenNLinks+2,
-			lipgloss.Color(config.Theme.NLinks.ForegroundColor),
-			lipgloss.Color(config.Theme.NLinks.BackgroundColor),
+			lipgloss.Color(config.Theme.NLinks.Foreground),
+			lipgloss.Color(config.Theme.NLinks.Background),
 			lipgloss.Right,
 		)
 	}
@@ -177,8 +177,8 @@ func printLongOutput(file *internal.DisplayItem, config *internal.Config, column
 		user = formatCommonColumn(
 			file.UserName,
 			columnsWidth.LenUserName+2,
-			lipgloss.Color(config.Theme.NLinks.ForegroundColor),
-			lipgloss.Color(config.Theme.NLinks.BackgroundColor),
+			lipgloss.Color(config.Theme.NLinks.Foreground),
+			lipgloss.Color(config.Theme.NLinks.Background),
 			lipgloss.Right,
 		)
 	}
@@ -186,8 +186,8 @@ func printLongOutput(file *internal.DisplayItem, config *internal.Config, column
 		group = formatCommonColumn(
 			file.GroupName,
 			columnsWidth.LenGroupName+2,
-			lipgloss.Color(config.Theme.GroupName.ForegroundColor),
-			lipgloss.Color(config.Theme.GroupName.BackgroundColor),
+			lipgloss.Color(config.Theme.GroupName.Foreground),
+			lipgloss.Color(config.Theme.GroupName.Background),
 			lipgloss.Right,
 		)
 	}
@@ -195,8 +195,8 @@ func printLongOutput(file *internal.DisplayItem, config *internal.Config, column
 		size = formatCommonColumn(
 			internal.SizeFormat(file.Size, config.General.SizeUnit),
 			columnsWidth.LenSize+2,
-			lipgloss.Color(config.Theme.Size.ForegroundColor),
-			lipgloss.Color(config.Theme.Size.BackgroundColor),
+			lipgloss.Color(config.Theme.Size.Foreground),
+			lipgloss.Color(config.Theme.Size.Background),
 			lipgloss.Right,
 		)
 	}
@@ -204,8 +204,8 @@ func printLongOutput(file *internal.DisplayItem, config *internal.Config, column
 		modifiedAt = formatCommonColumn(
 			file.ModifiedAt,
 			columnsWidth.LenModifiedAt+2,
-			lipgloss.Color(config.Theme.ModificationTime.ForegroundColor),
-			lipgloss.Color(config.Theme.ModificationTime.BackgroundColor),
+			lipgloss.Color(config.Theme.ModificationTime.Foreground),
+			lipgloss.Color(config.Theme.ModificationTime.Background),
 			lipgloss.Left,
 		)
 	}
@@ -231,47 +231,54 @@ func formatPermissions(file *internal.DisplayItem, config *internal.Config, colu
 		Render(lipgloss.JoinHorizontal(
 			lipgloss.Right,
 			lipgloss.NewStyle().
-				Foreground(lipgloss.Color(config.Theme.Permissions.DirectoryColor.ForegroundColor)).
-				Background(lipgloss.Color(config.Theme.Permissions.DirectoryColor.BackgroundColor)).
-				Render(string(file.Permissions[0])),
-			lipgloss.NewStyle().
-				Foreground(lipgloss.Color(config.Theme.Permissions.OwnerReadColor.ForegroundColor)).
-				Background(lipgloss.Color(config.Theme.Permissions.OwnerReadColor.BackgroundColor)).
+				Foreground(lipgloss.Color(config.Theme.Permissions.OwnerReadColor.Foreground)).
+				Background(lipgloss.Color(config.Theme.Permissions.OwnerReadColor.Background)).
 				Render(string(file.Permissions[1])),
 			lipgloss.NewStyle().
-				Foreground(lipgloss.Color(config.Theme.Permissions.OwnerWriteColor.ForegroundColor)).
-				Background(lipgloss.Color(config.Theme.Permissions.OwnerWriteColor.BackgroundColor)).
+				Foreground(lipgloss.Color(config.Theme.Permissions.OwnerWriteColor.Foreground)).
+				Background(lipgloss.Color(config.Theme.Permissions.OwnerWriteColor.Background)).
 				Render(string(file.Permissions[2])),
 			lipgloss.NewStyle().
-				Foreground(lipgloss.Color(config.Theme.Permissions.OwnerExecuteColor.ForegroundColor)).
-				Background(lipgloss.Color(config.Theme.Permissions.OwnerExecuteColor.BackgroundColor)).
+				Foreground(lipgloss.Color(config.Theme.Permissions.OwnerExecuteColor.Foreground)).
+				Background(lipgloss.Color(config.Theme.Permissions.OwnerExecuteColor.Background)).
 				Render(string(file.Permissions[3])),
 			lipgloss.NewStyle().
-				Foreground(lipgloss.Color(config.Theme.Permissions.GroupReadColor.ForegroundColor)).
-				Background(lipgloss.Color(config.Theme.Permissions.GroupReadColor.BackgroundColor)).
+				Foreground(lipgloss.Color(config.Theme.Permissions.GroupReadColor.Foreground)).
+				Background(lipgloss.Color(config.Theme.Permissions.GroupReadColor.Background)).
 				Render(string(file.Permissions[4])),
 			lipgloss.NewStyle().
-				Foreground(lipgloss.Color(config.Theme.Permissions.GroupWriteColor.ForegroundColor)).
-				Background(lipgloss.Color(config.Theme.Permissions.GroupWriteColor.BackgroundColor)).
+				Foreground(lipgloss.Color(config.Theme.Permissions.GroupWriteColor.Foreground)).
+				Background(lipgloss.Color(config.Theme.Permissions.GroupWriteColor.Background)).
 				Render(string(file.Permissions[5])),
 			lipgloss.NewStyle().
-				Foreground(lipgloss.Color(config.Theme.Permissions.GroupExecuteColor.ForegroundColor)).
-				Background(lipgloss.Color(config.Theme.Permissions.GroupExecuteColor.BackgroundColor)).
+				Foreground(lipgloss.Color(config.Theme.Permissions.GroupExecuteColor.Foreground)).
+				Background(lipgloss.Color(config.Theme.Permissions.GroupExecuteColor.Background)).
 				Render(string(file.Permissions[6])),
 			lipgloss.NewStyle().
-				Foreground(lipgloss.Color(config.Theme.Permissions.OthersReadColor.ForegroundColor)).
-				Background(lipgloss.Color(config.Theme.Permissions.OthersReadColor.BackgroundColor)).
+				Foreground(lipgloss.Color(config.Theme.Permissions.OthersReadColor.Foreground)).
+				Background(lipgloss.Color(config.Theme.Permissions.OthersReadColor.Background)).
 				Render(string(file.Permissions[7])),
 			lipgloss.NewStyle().
-				Foreground(lipgloss.Color(config.Theme.Permissions.OthersWriteColor.ForegroundColor)).
-				Background(lipgloss.Color(config.Theme.Permissions.OthersWriteColor.BackgroundColor)).
+				Foreground(lipgloss.Color(config.Theme.Permissions.OthersWriteColor.Foreground)).
+				Background(lipgloss.Color(config.Theme.Permissions.OthersWriteColor.Background)).
 				Render(string(file.Permissions[8])),
 			lipgloss.NewStyle().
-				Foreground(lipgloss.Color(config.Theme.Permissions.OthersExecuteColor.ForegroundColor)).
-				Background(lipgloss.Color(config.Theme.Permissions.OthersExecuteColor.BackgroundColor)).
+				Foreground(lipgloss.Color(config.Theme.Permissions.OthersExecuteColor.Foreground)).
+				Background(lipgloss.Color(config.Theme.Permissions.OthersExecuteColor.Background)).
 				Render(string(file.Permissions[9])),
 		),
 		)
+}
+
+func getNonExistingPermissionColor(permission string, config *internal.Config, defaultColor internal.Color) internal.Color {
+	if permission == "-" {
+		return internal.Color{
+			Foreground: config.Theme.Permissions.EmptyColor.Foreground,
+			Background: config.Theme.Permissions.EmptyColor.Background,
+		}
+	}
+
+	return defaultColor
 }
 
 func formatCommonColumn(text string, width int, fgColor lipgloss.Color, bgColor lipgloss.Color, align lipgloss.Position) string {
@@ -289,29 +296,29 @@ func getFileTypeColor(fileType internal.FileType, config *internal.Config) (lipg
 
 	switch fileType {
 	case internal.Regular:
-		fgColor = lipgloss.Color(config.Theme.FileName.RegularColor.ForegroundColor)
-		bgColor = lipgloss.Color(config.Theme.FileName.RegularColor.BackgroundColor)
+		fgColor = lipgloss.Color(config.Theme.FileName.RegularColor.Foreground)
+		bgColor = lipgloss.Color(config.Theme.FileName.RegularColor.Background)
 	case internal.Directory:
-		fgColor = lipgloss.Color(config.Theme.FileName.DirectoryColor.ForegroundColor)
-		bgColor = lipgloss.Color(config.Theme.FileName.DirectoryColor.BackgroundColor)
+		fgColor = lipgloss.Color(config.Theme.FileName.DirectoryColor.Foreground)
+		bgColor = lipgloss.Color(config.Theme.FileName.DirectoryColor.Background)
 	case internal.Pipe:
-		fgColor = lipgloss.Color(config.Theme.FileName.PipeColor.ForegroundColor)
-		bgColor = lipgloss.Color(config.Theme.FileName.PipeColor.BackgroundColor)
+		fgColor = lipgloss.Color(config.Theme.FileName.PipeColor.Foreground)
+		bgColor = lipgloss.Color(config.Theme.FileName.PipeColor.Background)
 	case internal.SymbolicLink:
-		fgColor = lipgloss.Color(config.Theme.FileName.SymbolicLinkColor.ForegroundColor)
-		bgColor = lipgloss.Color(config.Theme.FileName.SymbolicLinkColor.BackgroundColor)
+		fgColor = lipgloss.Color(config.Theme.FileName.SymbolicLinkColor.Foreground)
+		bgColor = lipgloss.Color(config.Theme.FileName.SymbolicLinkColor.Background)
 	case internal.BlockDevice:
-		fgColor = lipgloss.Color(config.Theme.FileName.BlockDeviceColor.ForegroundColor)
-		bgColor = lipgloss.Color(config.Theme.FileName.BlockDeviceColor.BackgroundColor)
+		fgColor = lipgloss.Color(config.Theme.FileName.BlockDeviceColor.Foreground)
+		bgColor = lipgloss.Color(config.Theme.FileName.BlockDeviceColor.Background)
 	case internal.CharDevice:
-		fgColor = lipgloss.Color(config.Theme.FileName.CharDeviceColor.ForegroundColor)
-		bgColor = lipgloss.Color(config.Theme.FileName.CharDeviceColor.BackgroundColor)
+		fgColor = lipgloss.Color(config.Theme.FileName.CharDeviceColor.Foreground)
+		bgColor = lipgloss.Color(config.Theme.FileName.CharDeviceColor.Background)
 	case internal.Socket:
-		fgColor = lipgloss.Color(config.Theme.FileName.SocketColor.ForegroundColor)
-		bgColor = lipgloss.Color(config.Theme.FileName.SocketColor.BackgroundColor)
+		fgColor = lipgloss.Color(config.Theme.FileName.SocketColor.Foreground)
+		bgColor = lipgloss.Color(config.Theme.FileName.SocketColor.Background)
 	default:
-		fgColor = lipgloss.Color(config.Theme.FileName.NonRegularColor.ForegroundColor)
-		bgColor = lipgloss.Color(config.Theme.FileName.NonRegularColor.BackgroundColor)
+		fgColor = lipgloss.Color(config.Theme.FileName.NonRegularColor.Foreground)
+		bgColor = lipgloss.Color(config.Theme.FileName.NonRegularColor.Background)
 	}
 
 	return fgColor, bgColor
